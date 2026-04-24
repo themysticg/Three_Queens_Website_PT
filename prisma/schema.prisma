@@ -1,0 +1,287 @@
+// FiveM Whitelist Applications - Prisma Schema
+// Uses PostgreSQL so it works on Vercel (Vercel Postgres, Neon, Supabase, etc.).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  discordId     String    @unique
+  username      String
+  discriminator String?
+  avatar        String?
+  email         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastActiveAt  DateTime?
+  isAdmin       Boolean   @default(false)
+  adminType     String?
+  applications  Application[]
+  jobApplications JobApplication[]
+  staffApplications StaffApplication[]
+  reviewedApplications   Application[]       @relation("ApplicationReviewer")
+  reviewedJobApplications JobApplication[]   @relation("JobApplicationReviewer")
+  reviewedStaffApplications StaffApplication[] @relation("StaffApplicationReviewer")
+  addedSiteMembers       SiteMember[]        @relation("SiteMemberAddedBy")
+  siteVisitors           SiteVisitor[]
+  auditLogs              AuditLog[]          @relation("AuditActor")
+}
+
+model SiteMember {
+  id          String   @id @default(cuid())
+  discordId   String   @unique
+  adminType   String
+  addedById   String
+  addedBy     User     @relation("SiteMemberAddedBy", fields: [addedById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([discordId])
+}
+
+model SiteVisitor {
+  id              String   @id @default(cuid())
+  visitorId       String   @unique
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  firstSeenAt     DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+  currentPath     String?
+  isAuthenticated Boolean  @default(false)
+
+  @@index([lastSeenAt])
+  @@index([userId])
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inGameName  String
+  age         Int
+  timezone    String
+  experience  String
+  motivation  String
+  characterStory String?
+  additionalInfo String?
+  answers     String?
+  status      String   @default("pending")
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  adminNotes  String?
+  submitterIp String?
+  submitterDiscordId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviewedByUser User?  @relation("ApplicationReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([status])
+  @@index([userId])
+}
+
+model FormQuestion {
+  id          String   @id @default(cuid())
+  formType    String
+  questionKey String
+  label       String
+  type        String
+  required    Boolean  @default(false)
+  placeholder String?
+  options     String?
+  layout      String   @default("full")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([formType, questionKey])
+  @@index([formType, isActive, sortOrder])
+}
+
+model Job {
+  id           String   @id @default(cuid())
+  title        String
+  category     String
+  description  String
+  requirements String
+  salaryTier    Int     @default(1)
+  icon         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  applications JobApplication[]
+
+  @@index([category])
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String   @default("pending")
+  adminNotes  String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  submitterIp String?
+  submitterDiscordId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviewedByUser User?  @relation("JobApplicationReviewer", fields: [reviewedBy], references: [id])
+
+  @@unique([jobId, userId])
+  @@index([status])
+  @@index([jobId])
+  @@index([userId])
+}
+
+model StoreCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  imageUrl    String?
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  items       StoreItem[]
+
+  @@index([sortOrder])
+}
+
+model StoreItem {
+  id          String        @id @default(cuid())
+  categoryId  String
+  category    StoreCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  imageUrl    String?
+  priceCents  Int
+  oldPriceCents Int?
+  currency    String        @default("TND")
+  statusText  String?
+  buttonLabel String        @default("Buy now")
+  purchaseUrl String?
+  featureList String?
+  isActive    Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([categoryId, isActive])
+  @@index([sortOrder])
+}
+
+model StaffApplication {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers     String
+  status      String   @default("pending")
+  adminNotes  String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  submitterIp String?
+  submitterDiscordId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviewedByUser User?  @relation("StaffApplicationReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([status])
+  @@index([userId])
+}
+
+model SiteSettings {
+  id                      String   @id @default("default")
+  serverName              String?
+  siteName                String?
+  logoDataUrl             String?
+  primaryColor            String?  @default("#f59e0b")
+  headerIcon              String?
+  whitelistNavLabel       String?
+  storeNavLabel           String?
+  discordLink             String?
+  discordWidgetServerId   String?
+  fivemServerDetailId     String?
+  /** Shown in {serverConnect} on the homepage; use a DNS host:port if FiveM returns a raw IP. */
+  fivemServerConnectLabel String?
+  homepageSubtitle        String?
+  storePageTitle          String?
+  storePageDescription    String?
+  topBannerEnabled        Boolean? @default(true)
+  topBannerCtaLabel       String?
+  topBannerCtaUrl         String?
+  topBannerMessages       String?
+  footerBadgeLabel        String?
+  footerTagline           String?
+  footerText              String?
+  footerConnectButtonText String?
+  footerConnectBlurb      String?
+  footerCopyrightNote     String?
+  footerBottomTaglineLeft String?
+  footerBottomTaglineRight String?
+  footerNavHeading        String?
+  footerConnectHeading    String?
+  footerDiscordCardTitle  String?
+  discordDmAuthorName     String?
+  dmTemplatesJson         String?
+  homepageContentJson     String?
+  logsWebhookUrl          String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  action          String
+  entityType      String
+  entityId        String?
+  actorUserId     String?
+  actorUser       User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorDiscordId  String?
+  targetDiscordId String?
+  ipAddress       String?
+  metadata        String?
+  createdAt       DateTime @default(now())
+
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([createdAt])
+}
+
+model DiscordOnlineSnapshot {
+  guildId   String   @id
+  userIds   Json
+  updatedAt DateTime @updatedAt
+}
+
+model RuleCategory {
+  id        String        @id @default(cuid())
+  title     String
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  sections  RuleSection[]
+
+  @@index([sortOrder])
+}
+
+model RuleSection {
+  id         String       @id @default(cuid())
+  categoryId String
+  category   RuleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code       String       @default("")
+  title      String
+  content    String       @default("")
+  sortOrder  Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@index([categoryId, sortOrder])
+}
