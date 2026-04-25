@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
-        working-directory: 'D:\Github Repos\Three_Queens_Website_PT'
+        working-directory: 'D:\Github_Repos\Three_Queens_Website_PT'
     steps:
       - name: Pull latest main
         run: |
