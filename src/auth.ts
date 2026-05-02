@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import Discord from "next-auth/providers/discord";
 import { prisma } from "@/lib/prisma";
 
@@ -157,7 +157,7 @@ export const authOptions = {
   trustHost: true,
 };
 
-export const { handlers, signIn, signOut, auth } = NextAuth(authOptions as NextAuthConfig);
+export const { handlers, signIn, signOut, auth } = NextAuth(authOptions as NextAuthOptions);
 
 /** Result of resolving the current user from session. */
 export type ResolveUserIdResult =
