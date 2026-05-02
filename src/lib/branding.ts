@@ -18,8 +18,6 @@ export type BrandingSettings = {
   discordLink: string;
   discordWidgetServerId: string;
   fivemServerDetailId: string;
-  /** Optional host:port (or label) shown for {serverConnect}; FiveM API may return a raw IP. */
-  fivemServerConnectLabel: string;
   homepageSubtitle: string;
   storePageTitle: string;
   storePageDescription: string;
@@ -55,7 +53,6 @@ export type BrandingSettingsInput = {
   discordLink?: string | null;
   discordWidgetServerId?: string | null;
   fivemServerDetailId?: string | null;
-  fivemServerConnectLabel?: string | null;
   homepageSubtitle?: string | null;
   storePageTitle?: string | null;
   storePageDescription?: string | null;
@@ -91,7 +88,6 @@ export const defaultBrandingSettings: BrandingSettings = {
   discordLink: appConfig.discordInviteUrl,
   discordWidgetServerId: appConfig.discordWidgetServerId,
   fivemServerDetailId: "krkxj7",
-  fivemServerConnectLabel: "",
   homepageSubtitle: appConfig.homepageSubtitle,
   storePageTitle: appConfig.storePageTitle,
   storePageDescription: appConfig.storePageDescription,
@@ -254,10 +250,6 @@ export function mergeBrandingSettings(
     fivemServerDetailId: normalizeTextAllowEmpty(
       overrides?.fivemServerDetailId,
       defaultBrandingSettings.fivemServerDetailId
-    ),
-    fivemServerConnectLabel: normalizeTextAllowEmpty(
-      overrides?.fivemServerConnectLabel,
-      defaultBrandingSettings.fivemServerConnectLabel
     ),
     homepageSubtitle: normalizeText(
       overrides?.homepageSubtitle,

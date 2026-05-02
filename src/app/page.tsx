@@ -116,11 +116,7 @@ async function getDiscordMemberCount(discordLink: string): Promise<string | null
   }
 }
 
-async function getHomepageMetrics(
-  serverDetailId: string,
-  discordLink: string,
-  serverConnectLabel: string
-): Promise<HomepageMetrics> {
+async function getHomepageMetrics(serverDetailId: string, discordLink: string): Promise<HomepageMetrics> {
   try {
     const [discordMembers, staffCount, jobsCount, pendingApps, liveServer] = await Promise.all([
       getDiscordMemberCount(discordLink),
@@ -130,8 +126,6 @@ async function getHomepageMetrics(
       getFiveMPlayerMetrics(serverDetailId),
     ]);
 
-    const displayConnect = serverConnectLabel.trim() || liveServer.serverConnect;
-
     return {
       members: discordMembers ?? "250+",
       staffCount: String(staffCount),
@@ -140,7 +134,7 @@ async function getHomepageMetrics(
       serverStatus: liveServer.serverStatus,
       playersOnline: liveServer.playersOnline,
       maxPlayers: liveServer.maxPlayers,
-      serverConnect: displayConnect,
+      serverConnect: liveServer.serverConnect,
     };
   } catch {
     return {
@@ -151,7 +145,7 @@ async function getHomepageMetrics(
       serverStatus: "Online",
       playersOnline: "0",
       maxPlayers: "128",
-      serverConnect: serverConnectLabel.trim() || serverDetailId,
+      serverConnect: serverDetailId,
     };
   }
 }
@@ -210,11 +204,7 @@ export default async function HomePage() {
 
   const branding = await getBrandingSettings();
   const homepage = branding.homepage;
-  const metrics = await getHomepageMetrics(
-    branding.fivemServerDetailId,
-    branding.discordLink,
-    branding.fivemServerConnectLabel
-  );
+  const metrics = await getHomepageMetrics(branding.fivemServerDetailId, branding.discordLink);
   const showDiscordWidget = Boolean(branding.discordWidgetServerId?.trim());
 
   const tokens = {
@@ -353,7 +343,6 @@ export default async function HomePage() {
                   src={`https://discord.com/widget?id=${branding.discordWidgetServerId.trim()}&theme=dark`}
                   width="100%"
                   height="360"
-                  allow="fullscreen"
                   frameBorder="0"
                   sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
                   title="Discord server"

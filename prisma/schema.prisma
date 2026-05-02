@@ -207,8 +207,6 @@ model SiteSettings {
   discordLink             String?
   discordWidgetServerId   String?
   fivemServerDetailId     String?
-  /** Shown in {serverConnect} on the homepage; use a DNS host:port if FiveM returns a raw IP. */
-  fivemServerConnectLabel String?
   homepageSubtitle        String?
   storePageTitle          String?
   storePageDescription    String?

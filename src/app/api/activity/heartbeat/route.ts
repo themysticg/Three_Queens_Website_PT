@@ -1,6 +1,25 @@
 import { auth, resolveSessionUserId } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+function isMissingSiteVisitorTable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: string; meta?: { modelName?: string; table?: string } };
+  return (
+    candidate.code === "P2021" &&
+    (candidate.meta?.modelName === "SiteVisitor" ||
+      candidate.meta?.table === "public.SiteVisitor")
+  );
+}
+
+function isMissingUserTable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: string; meta?: { modelName?: string; table?: string } };
+  return (
+    candidate.code === "P2021" &&
+    (candidate.meta?.modelName === "User" || candidate.meta?.table === "public.User")
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json().catch(() => null)) as
@@ -25,35 +44,49 @@ export async function POST(request: Request) {
       const result = await resolveSessionUserId(session);
       if (result.ok) {
         userId = result.userId;
-        await prisma.user.update({
-          where: { id: userId },
-          data: { lastActiveAt: now },
-        });
+        try {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { lastActiveAt: now },
+          });
+        } catch (error) {
+          if (!isMissingUserTable(error)) {
+            throw error;
+          }
+        }
       }
     }
 
-    await prisma.siteVisitor.upsert({
-      where: { visitorId },
-      create: {
-        visitorId,
-        currentPath,
-        lastSeenAt: now,
-        isAuthenticated: Boolean(userId),
-        ...(userId ? { userId } : {}),
-      },
-      update: userId
-        ? {
-            userId,
-            currentPath,
-            lastSeenAt: now,
-            isAuthenticated: true,
-          }
-        : {
-            currentPath,
-            lastSeenAt: now,
-            isAuthenticated: false,
-          },
-    });
+    try {
+      await prisma.siteVisitor.upsert({
+        where: { visitorId },
+        create: {
+          visitorId,
+          currentPath,
+          lastSeenAt: now,
+          isAuthenticated: Boolean(userId),
+          ...(userId ? { userId } : {}),
+        },
+        update: userId
+          ? {
+              userId,
+              currentPath,
+              lastSeenAt: now,
+              isAuthenticated: true,
+            }
+          : {
+              currentPath,
+              lastSeenAt: now,
+              isAuthenticated: false,
+            },
+      });
+    } catch (error) {
+      if (!isMissingSiteVisitorTable(error)) {
+        throw error;
+      }
+      // Heartbeat is non-critical; skip visitor tracking until DB schema is applied.
+      return Response.json({ ok: true, trackingSkipped: true });
+    }
 
     return Response.json({ ok: true });
   } catch (error) {

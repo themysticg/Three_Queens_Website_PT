@@ -5,25 +5,14 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/toast";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  "ALL JOBS": "💼",
-  "EMERGENCY SERVICES": "🛡️",
-  "CIVILIAN": "👤",
-  "CRIMINAL": "🔗",
-  "BUSINESS": "💵",
-  "GOVERNMENT": "🏛️",
-  "MEDICAL": "❤️",
-  "MECHANIC": "🔧",
-};
-
 const CATEGORY_COLORS: Record<string, string> = {
-  "EMERGENCY SERVICES": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  "CIVILIAN": "bg-rose-500/20 text-rose-400 border-rose-500/30",
-  "CRIMINAL": "bg-rose-500/20 text-rose-400 border-rose-500/30",
-  "BUSINESS": "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  "GOVERNMENT": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  "MEDICAL": "bg-red-500/20 text-red-400 border-red-500/30",
-  "MECHANIC": "bg-rose-500/20 text-rose-400 border-rose-500/30",
+  "EMERGENCY SERVICES": "brand-soft brand-text ring-rose-500/30",
+  "CIVILIAN": "brand-soft brand-text ring-rose-500/30",
+  "CRIMINAL": "brand-soft brand-text ring-rose-500/30",
+  "BUSINESS": "brand-soft brand-text ring-rose-500/30",
+  "GOVERNMENT": "brand-soft brand-text ring-rose-500/30",
+  "MEDICAL": "brand-soft brand-text ring-rose-500/30",
+  "MECHANIC": "brand-soft brand-text ring-rose-500/30",
 };
 
 type Job = {
@@ -83,125 +72,138 @@ export function JobsPageClient({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-2 text-2xl font-bold text-zinc-100">Jobs</h1>
-      <p className="mb-8 text-zinc-400">
-        Browse open positions and apply in-game. Sign in with Discord to apply.
-      </p>
+      <section className="relative overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-950 p-6 sm:p-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.10),transparent_30%)]" />
+        <div className="relative">
+        <p className="brand-soft brand-text mb-3 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-widest">
+          Career Portal
+        </p>
+        <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+          Find Your Next Role In The City
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
+          Explore active departments, compare starting pay bands, and submit your
+          in-game application in seconds with your Discord account.
+        </p>
 
-      <div className="flex flex-col gap-8 lg:flex-row">
-        {/* Sidebar - Categories */}
-        <aside className="w-full shrink-0 lg:w-56">
-          <h2 className="brand-text mb-3 text-sm font-semibold uppercase tracking-wider">
-            Categories
-          </h2>
-          <ul className="space-y-1">
-            <li>
-              <button
-                type="button"
-                onClick={() => setSelectedCategory(null)}
-                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
-                  selectedCategory === null
-                    ? "brand-bg"
-                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                }`}
-              >
-                <span>{CATEGORY_ICONS["ALL JOBS"] ?? "💼"}</span>
-                <span>ALL JOBS</span>
-                <span className="ml-auto">({totalJobs})</span>
-              </button>
-            </li>
-            {categories.map((cat) => (
-              <li key={cat}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
-                    selectedCategory === cat
-                      ? "brand-bg"
-                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+            <p className="text-xs uppercase tracking-wider text-slate-400">
+              Open Roles
+            </p>
+            <p className="mt-1 text-2xl font-bold text-white">{totalJobs}</p>
+          </div>
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+            <p className="text-xs uppercase tracking-wider text-slate-400">
+              Departments
+            </p>
+            <p className="mt-1 text-2xl font-bold text-white">{categories.length}</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section className="mt-7">
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+              selectedCategory === null
+                ? "brand-bg text-white"
+                : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500 hover:text-white"
+            }`}
+          >
+            <span>All Jobs</span>
+            <span className="rounded-full bg-black/20 px-2 py-0.5">{
+              totalJobs
+            }</span>
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                selectedCategory === cat
+                  ? "brand-bg text-white"
+                  : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500 hover:text-white"
+              }`}
+            >
+              <span>{cat}</span>
+              <span className="rounded-full bg-black/20 px-2 py-0.5">
+                {countByCategory[cat] ?? 0}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((job) => (
+            <article
+              key={job.id}
+              className="group flex h-full flex-col rounded-3xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-lg shadow-black/20 transition hover:-translate-y-1 hover:border-zinc-600"
+            >
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-bold text-white">{job.title}</h3>
+                  <p className="text-xs uppercase tracking-wider text-slate-400">
+                    Starting {salaryDollars(job.salaryTier)}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ring-1 ${
+                    CATEGORY_COLORS[job.category] ?? "bg-slate-700 text-slate-200 ring-slate-500/40"
                   }`}
                 >
-                  <span>{CATEGORY_ICONS[cat] ?? "📋"}</span>
-                  <span className="truncate">{cat}</span>
-                  <span className="ml-auto">({countByCategory[cat] ?? 0})</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-xs text-zinc-500">
-            TOTAL JOBS <span className="brand-text">{totalJobs}</span>
-          </p>
-          <p className="text-xs text-zinc-500">
-            SALARY RANGE <span className="brand-text">$-$$$$</span>
-          </p>
-        </aside>
+                  {job.category}
+                </span>
+              </div>
 
-        {/* Job cards grid */}
-        <div className="min-w-0 flex-1">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((job) => (
-              <article
-                key={job.id}
-                className="flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
-              >
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <span className="text-2xl" aria-hidden>
-                    {job.icon ?? "💼"}
-                  </span>
-                  <span
-                    className={`rounded border px-2 py-0.5 text-xs font-medium ${
-                      CATEGORY_COLORS[job.category] ?? "bg-zinc-700 text-zinc-300"
-                    }`}
-                  >
-                    {job.category}
-                  </span>
-                </div>
-                <h3 className="mb-1 text-lg font-bold text-zinc-100">
-                  {job.title}
-                </h3>
-                <p className="mb-3 text-sm text-zinc-400">{job.description}</p>
-                <ul className="mb-3 flex-1 space-y-0.5 text-xs text-zinc-500">
-                  {job.requirements.map((r, i) => (
-                    <li key={i}>• {r}</li>
-                  ))}
-                </ul>
-                <p className="mb-3 text-xs text-zinc-500">
-                  STARTING{" "}
-                  <span className="brand-text">
-                    {salaryDollars(job.salaryTier)}
-                  </span>
-                </p>
-                {session ? (
-                  <button
-                    type="button"
-                    onClick={() => handleApply(job.id)}
-                    disabled={applyingId === job.id}
-                    className="brand-soft w-full rounded-lg px-4 py-3 text-sm font-medium transition brand-soft-hover disabled:opacity-50"
-                  >
-                    {applyingId === job.id ? "Applying..." : "APPLY NOW"}
-                  </button>
-                ) : (
-                  <Link
-                    href="/api/auth/signin/discord?callbackUrl=/jobs"
-                    className="brand-soft block w-full rounded-lg px-4 py-3 text-center text-sm font-medium transition brand-soft-hover"
-                  >
-                    Sign in to apply
-                  </Link>
-                )}
-              </article>
-            ))}
-          </div>
-          {filtered.length === 0 && (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-8 text-center">
-              <p className="text-zinc-500">
-                {totalJobs === 0 && configHasJobs
-                  ? "No jobs loaded yet. Ensure the database is set up (run migrations) and that the app can write to it."
-                  : "No jobs in this category."}
+              <p className="mb-4 text-sm leading-relaxed text-slate-300">
+                {job.description}
               </p>
-            </div>
-          )}
+
+              <ul className="mb-5 flex-1 space-y-1.5 text-sm text-slate-300">
+                {job.requirements.map((r, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="mt-0.5 text-cyan-300">•</span>
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {session ? (
+                <button
+                  type="button"
+                  onClick={() => handleApply(job.id)}
+                  disabled={applyingId === job.id}
+                  className="brand-bg rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {applyingId === job.id ? "Submitting..." : "Start Application"}
+                </button>
+              ) : (
+                <Link
+                  href="/api/auth/signin/discord?callbackUrl=/jobs"
+                  className="rounded-xl border border-slate-600 bg-slate-800/70 px-4 py-3 text-center text-sm font-semibold text-slate-100 transition hover:border-rose-400/60 hover:text-white"
+                >
+                  Sign in with Discord
+                </Link>
+              )}
+            </article>
+          ))}
         </div>
-      </div>
+
+        {filtered.length === 0 && (
+          <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-10 text-center">
+            <p className="text-slate-300">
+              {totalJobs === 0 && configHasJobs
+                ? "No jobs loaded yet. Ensure the database is set up (run migrations) and that the app can write to it."
+                : "No jobs found for this department yet."}
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

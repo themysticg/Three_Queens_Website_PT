@@ -39,7 +39,6 @@ const EMPTY_SETTINGS: BrandingSettings = {
   discordLink: "",
   discordWidgetServerId: "",
   fivemServerDetailId: "",
-  fivemServerConnectLabel: "",
   homepageSubtitle: "",
   storePageTitle: "",
   storePageDescription: "",
@@ -444,24 +443,6 @@ export function AdminBrandingSettings() {
               className={inputClass}
               placeholder="krkxj7"
             />
-          </label>
-          <label className="flex flex-col gap-2 text-sm font-medium text-zinc-300">
-            Server connect label (optional)
-            <input
-              type="text"
-              value={settings.fivemServerConnectLabel}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  fivemServerConnectLabel: event.target.value,
-                }))
-              }
-              className={inputClass}
-              placeholder="play.yourdomain.com:30120"
-            />
-            <span className="text-xs font-normal text-zinc-500">
-              Shown for {"{serverConnect}"} on the homepage. Use your DNS host:port if FiveM returns a raw IP.
-            </span>
           </label>
           <label className="flex flex-col gap-2 text-sm font-medium text-zinc-300">
             DM author name

@@ -13,7 +13,6 @@ import type { HomepageContent } from "@/lib/homepage-content";
 const SITE_SETTINGS_ID = "default";
 const MISSING_HOMEPAGE_COLUMN = "homepageContentJson";
 const MISSING_FIVEM_SERVER_ID_COLUMN = "fivemServerDetailId";
-const MISSING_FIVEM_CONNECT_LABEL_COLUMN = "fivemServerConnectLabel";
 
 function parseMessages(value: string | null): string[] | undefined {
   if (!value) return undefined;
@@ -77,10 +76,6 @@ function isMissingFiveMServerIdColumnError(error: unknown): boolean {
   return isMissingSchemaColumnError(error, MISSING_FIVEM_SERVER_ID_COLUMN);
 }
 
-function isMissingFiveMServerConnectLabelColumnError(error: unknown): boolean {
-  return isMissingSchemaColumnError(error, MISSING_FIVEM_CONNECT_LABEL_COLUMN);
-}
-
 async function ensureHomepageContentColumn(): Promise<void> {
   try {
     await prisma.$executeRawUnsafe(
@@ -101,16 +96,6 @@ async function ensureFiveMServerIdColumn(): Promise<void> {
   }
 }
 
-async function ensureFiveMServerConnectLabelColumn(): Promise<void> {
-  try {
-    await prisma.$executeRawUnsafe(
-      'ALTER TABLE "SiteSettings" ADD COLUMN IF NOT EXISTS "fivemServerConnectLabel" TEXT'
-    );
-  } catch {
-    // Ignore auto-repair failures and let the original request error surface.
-  }
-}
-
 function mapSiteSettingsRecord(
   record:
     | {
@@ -125,7 +110,6 @@ function mapSiteSettingsRecord(
         discordLink: string | null;
         discordWidgetServerId: string | null;
         fivemServerDetailId: string | null;
-        fivemServerConnectLabel: string | null;
         homepageSubtitle: string | null;
         storePageTitle: string | null;
         storePageDescription: string | null;
@@ -157,7 +141,6 @@ function mapSiteSettingsRecord(
     dmTemplates: parseDmTemplates(record.dmTemplatesJson),
     homepage: parseHomepageContent(record.homepageContentJson),
     fivemServerDetailId: record.fivemServerDetailId,
-    fivemServerConnectLabel: record.fivemServerConnectLabel,
   };
   return mergeBrandingSettings(input);
 }
@@ -168,11 +151,7 @@ async function loadSiteSettingsRecord() {
       where: { id: SITE_SETTINGS_ID },
     });
   } catch (error) {
-    if (
-      !isMissingHomepageContentColumnError(error) &&
-      !isMissingFiveMServerIdColumnError(error) &&
-      !isMissingFiveMServerConnectLabelColumnError(error)
-    ) {
+    if (!isMissingHomepageContentColumnError(error) && !isMissingFiveMServerIdColumnError(error)) {
       throw error;
     }
 
@@ -181,9 +160,6 @@ async function loadSiteSettingsRecord() {
     }
     if (isMissingFiveMServerIdColumnError(error)) {
       await ensureFiveMServerIdColumn();
-    }
-    if (isMissingFiveMServerConnectLabelColumnError(error)) {
-      await ensureFiveMServerConnectLabelColumn();
     }
     return prisma.siteSettings.findUnique({
       where: { id: SITE_SETTINGS_ID },
@@ -226,7 +202,6 @@ export async function saveBrandingSettings(
     discordLink: merged.discordLink,
     discordWidgetServerId: merged.discordWidgetServerId,
     fivemServerDetailId: merged.fivemServerDetailId,
-    fivemServerConnectLabel: merged.fivemServerConnectLabel,
     homepageSubtitle: merged.homepageSubtitle,
     storePageTitle: merged.storePageTitle,
     storePageDescription: merged.storePageDescription,
@@ -261,11 +236,7 @@ export async function saveBrandingSettings(
       update: payload,
     });
   } catch (error) {
-    if (
-      !isMissingHomepageContentColumnError(error) &&
-      !isMissingFiveMServerIdColumnError(error) &&
-      !isMissingFiveMServerConnectLabelColumnError(error)
-    ) {
+    if (!isMissingHomepageContentColumnError(error) && !isMissingFiveMServerIdColumnError(error)) {
       throw error;
     }
 
@@ -274,9 +245,6 @@ export async function saveBrandingSettings(
     }
     if (isMissingFiveMServerIdColumnError(error)) {
       await ensureFiveMServerIdColumn();
-    }
-    if (isMissingFiveMServerConnectLabelColumnError(error)) {
-      await ensureFiveMServerConnectLabelColumn();
     }
     record = await prisma.siteSettings.upsert({
       where: { id: SITE_SETTINGS_ID },
