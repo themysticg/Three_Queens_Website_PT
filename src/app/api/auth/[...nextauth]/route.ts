@@ -20,7 +20,11 @@ async function handleGetSignInWithProvider(request: NextRequest) {
   const pathname = url.pathname;
   const match = pathname.match(new RegExp(`^${basePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/signin/([^/]+)$`));
   if (!match) return null;
-  const postRequest = new Request(request.url, {
+  const externalBase = process.env.NEXTAUTH_URL ?? process.env.AUTH_URL;
+  const correctedUrl = externalBase
+    ? new URL(url.pathname + url.search, externalBase).toString()
+    : request.url;
+  const postRequest = new Request(correctedUrl, {
     method: "POST",
     headers: request.headers,
   });
