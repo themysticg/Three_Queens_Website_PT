@@ -349,8 +349,8 @@ export function JobsPageClient({
           {filtered.length === 0 && (
             <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-10 text-center">
               <p className="text-slate-300">
-                {totalJobs === 0 && configHasJobs
-                  ? "No jobs loaded yet. Ensure the database is set up (run migrations) and that the app can write to it."
+                {totalJobs === 0
+                  ? "No jobs available yet. Create jobs from the Admin panel."
                   : "No jobs found for this department yet."}
               </p>
             </div>
