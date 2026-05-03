@@ -10,6 +10,7 @@ type JobApplication = {
   reviewedAt: string | null;
   createdAt: string;
   submitterIp?: string | null;
+  answers?: string | null;
   job: { id: string; title: string; category: string };
   user: { username: string; discordId: string; avatar?: string | null };
   reviewedByUser?: { username: string; avatar: string | null } | null;
@@ -152,6 +153,26 @@ export function AdminJobApplicationList() {
                     <span className="text-zinc-500">IP address</span>
                     <p className="font-mono text-zinc-200">{app.submitterIp ?? "Unknown"}</p>
                   </div>
+                  {app.answers && (() => {
+                    try {
+                      const parsed = JSON.parse(app.answers) as Record<string, string>;
+                      const entries = Object.entries(parsed).filter(([, v]) => v);
+                      if (entries.length === 0) return null;
+                      return (
+                        <div className="space-y-3 border-t border-zinc-800 pt-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Application answers</p>
+                          {entries.map(([key, value]) => (
+                            <div key={key} className="text-sm">
+                              <span className="font-medium capitalize text-zinc-400">{key.replace(/_/g, " ")}</span>
+                              <p className="mt-0.5 whitespace-pre-wrap text-zinc-200">{value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    } catch {
+                      return null;
+                    }
+                  })()}
                   {(app.reviewedByUser || app.reviewedAt) && app.status !== "pending" && (
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-800 pt-4 text-sm">
                       <span className="text-zinc-500">

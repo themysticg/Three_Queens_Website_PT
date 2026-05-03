@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { appConfig } from "@/config/app.config";
 
-export type FormType = "whitelist" | "staff";
+export type FormType = "whitelist" | "staff" | "job";
 export type FormQuestionType = "text" | "textarea" | "number" | "select";
 export type FormQuestionLayout = "full" | "half";
 
@@ -90,6 +90,7 @@ const defaultQuestionsByFormType: Record<FormType, Omit<FormQuestionDefinition, 
   staff: appConfig.staffApplicationQuestions.map((question, index) =>
     toDbQuestion("staff", question, index)
   ),
+  job: [],
 };
 
 function mapRecordToDefinition(record: {

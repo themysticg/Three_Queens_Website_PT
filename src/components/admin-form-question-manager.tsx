@@ -156,7 +156,7 @@ export function AdminFormQuestionManager() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        {(["whitelist", "staff"] as const).map((type) => (
+        {(["whitelist", "staff", "job"] as const).map((type) => (
           <button
             key={type}
             type="button"
@@ -170,7 +170,7 @@ export function AdminFormQuestionManager() {
                 : "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
             }`}
           >
-            {type === "whitelist" ? "Whitelist form" : "Staff form"}
+            {type === "whitelist" ? "Whitelist form" : type === "staff" ? "Staff form" : "Job form"}
           </button>
         ))}
       </div>

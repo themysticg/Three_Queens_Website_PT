@@ -123,6 +123,7 @@ model JobApplication {
   job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers     String?
   status      String   @default("pending")
   adminNotes  String?
   reviewedBy  String?
