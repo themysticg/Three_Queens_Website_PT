@@ -17,11 +17,14 @@ function canManageFormType(adminType: string | null | undefined, formType: FormT
   if (formType === "whitelist" || formType === "staff") {
     return adminType === "team";
   }
+  if (formType === "job") {
+    return adminType === "jobs" || adminType === "team";
+  }
   return false;
 }
 
 function parseFormType(value: unknown): FormType | null {
-  return value === "whitelist" || value === "staff" ? value : null;
+  return value === "whitelist" || value === "staff" || value === "job" ? value : null;
 }
 
 function parseType(value: unknown): FormQuestionType | null {

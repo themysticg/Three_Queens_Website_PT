@@ -19,6 +19,9 @@ function canManageFormType(adminType: string | null | undefined, formType: FormT
   if (formType === "whitelist" || formType === "staff") {
     return adminType === "team";
   }
+  if (formType === "job") {
+    return adminType === "jobs" || adminType === "team";
+  }
   return false;
 }
 
