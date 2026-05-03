@@ -179,6 +179,9 @@ export function AdminFormQuestionManager() {
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-zinc-100">
             {editor.id ? "Edit question" : "Add question"}
+            <span className="ml-2 rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
+              {formType === "whitelist" ? "Whitelist form" : formType === "staff" ? "Staff form" : "Job form"}
+            </span>
           </h3>
           {editor.id && (
             <button
