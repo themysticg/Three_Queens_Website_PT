@@ -176,8 +176,8 @@ export async function getFormQuestions(
     console.error(`Falling back to config questions for ${formType}:`, error);
     return defaultQuestionsByFormType[formType].map((question) => ({
       id: `${formType}-${question.questionKey}`,
-      jobId: "",
       ...question,
+      jobId: "",
     }));
   }
 }
