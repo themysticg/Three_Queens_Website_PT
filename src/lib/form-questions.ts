@@ -73,6 +73,7 @@ function toDbQuestion(
   return {
     formType,
     questionKey: question.id,
+    jobId: "",
     label: question.label,
     type: question.type,
     required: question.required,
