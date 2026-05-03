@@ -17,6 +17,7 @@
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@auth/core": "^0.34.3",
     "@prisma/client": "^6.19.2",
     "discord.js": "^14.19.3",
     "dotenv": "^17.3.1",

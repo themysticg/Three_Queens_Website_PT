@@ -44,13 +44,14 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const formType = parseFormType(url.searchParams.get("formType"));
+  const jobId = url.searchParams.get("jobId") ?? "";
   const adminType = (session?.user as { adminType?: string | null } | undefined)?.adminType;
 
   if (!formType || !canManageFormType(adminType, formType)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const questions = await getFormQuestions(formType, { includeInactive: true });
+  const questions = await getFormQuestions(formType, { includeInactive: true, jobId });
   return NextResponse.json(questions);
 }
 
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
   const type = parseType(body.type);
   const questionKey = normalizeQuestionKey(body.questionKey ?? "");
   const label = (body.label ?? "").trim();
+  const jobId = typeof (body as { jobId?: string }).jobId === "string" ? (body as { jobId?: string }).jobId! : "";
 
   if (!questionKey || !label || !type) {
     return NextResponse.json(
@@ -95,6 +97,7 @@ export async function POST(request: Request) {
     data: {
       formType,
       questionKey,
+      jobId,
       label,
       type,
       required: Boolean(body.required),
@@ -120,6 +123,6 @@ export async function POST(request: Request) {
     },
   });
 
-  const questions = await getFormQuestions(formType, { includeInactive: true });
+  const questions = await getFormQuestions(formType, { includeInactive: true, jobId });
   return NextResponse.json(questions);
 }

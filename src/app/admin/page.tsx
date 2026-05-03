@@ -8,6 +8,7 @@ import { AdminAuditLogList } from "@/components/admin-audit-log-list";
 import { AdminBrandingSettings } from "@/components/admin-branding-settings";
 import { AdminFormQuestionManager } from "@/components/admin-form-question-manager";
 import { AdminJobApplicationList } from "@/components/admin-job-application-list";
+import { AdminJobManager } from "@/components/admin-job-manager";
 import { AdminStaffApplicationList } from "@/components/admin-staff-application-list";
 import { AdminMembersList } from "@/components/admin-members-list";
 import { AdminStoreManager } from "@/components/admin-store-manager";
@@ -25,6 +26,23 @@ type AdminTab =
   | "logs"
   | "forms"
   | "rules";
+
+function AdminJobsSection() {
+  const [subTab, setSubTab] = useState<"applications" | "manage">("applications");
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        {(["applications", "manage"] as const).map((t) => (
+          <button key={t} type="button" onClick={() => setSubTab(t)}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${subTab === t ? "brand-bg" : "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"}`}>
+            {t === "applications" ? "Applications" : "Manage jobs"}
+          </button>
+        ))}
+      </div>
+      {subTab === "applications" ? <AdminJobApplicationList /> : <AdminJobManager />}
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -294,7 +312,7 @@ export default function AdminPage() {
       </p>
 
       {activeTab === "whitelist" && <AdminApplicationList />}
-      {activeTab === "jobs" && <AdminJobApplicationList />}
+      {activeTab === "jobs" && <AdminJobsSection />}
       {activeTab === "staff" && <AdminStaffApplicationList />}
       {activeTab === "store" && <AdminStoreManager />}
       {activeTab === "members" && <AdminMembersList isFullAdmin={adminType === "full"} />}

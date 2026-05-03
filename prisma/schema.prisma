@@ -87,6 +87,7 @@ model FormQuestion {
   id          String   @id @default(cuid())
   formType    String
   questionKey String
+  jobId       String   @default("")
   label       String
   type        String
   required    Boolean  @default(false)
@@ -98,8 +99,8 @@ model FormQuestion {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@unique([formType, questionKey])
-  @@index([formType, isActive, sortOrder])
+  @@unique([formType, questionKey, jobId])
+  @@index([formType, jobId, isActive, sortOrder])
 }
 
 model Job {

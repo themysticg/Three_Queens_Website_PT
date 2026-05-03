@@ -9,6 +9,7 @@ export type FormQuestionDefinition = {
   id: string;
   formType: FormType;
   questionKey: string;
+  jobId: string;
   label: string;
   type: FormQuestionType;
   required: boolean;
@@ -97,6 +98,7 @@ function mapRecordToDefinition(record: {
   id: string;
   formType: string;
   questionKey: string;
+  jobId: string;
   label: string;
   type: string;
   required: boolean;
@@ -110,6 +112,7 @@ function mapRecordToDefinition(record: {
     id: record.id,
     formType: record.formType as FormType,
     questionKey: record.questionKey,
+    jobId: record.jobId,
     label: record.label,
     type: record.type as FormQuestionType,
     required: record.required,
@@ -130,13 +133,14 @@ export function normalizeQuestionKey(value: string): string {
 }
 
 export async function ensureDefaultFormQuestions(formType: FormType): Promise<void> {
-  const existingCount = await prisma.formQuestion.count({ where: { formType } });
+  const existingCount = await prisma.formQuestion.count({ where: { formType, jobId: "" } });
   if (existingCount > 0) return;
 
   await prisma.formQuestion.createMany({
     data: defaultQuestionsByFormType[formType].map((question) => ({
       formType: question.formType,
       questionKey: question.questionKey,
+      jobId: "",
       label: question.label,
       type: question.type,
       required: question.required,
@@ -151,14 +155,16 @@ export async function ensureDefaultFormQuestions(formType: FormType): Promise<vo
 
 export async function getFormQuestions(
   formType: FormType,
-  options?: { includeInactive?: boolean }
+  options?: { includeInactive?: boolean; jobId?: string }
 ): Promise<FormQuestionDefinition[]> {
+  const jobId = options?.jobId ?? "";
   try {
-    await ensureDefaultFormQuestions(formType);
+    if (jobId === "") await ensureDefaultFormQuestions(formType);
 
     const records = await prisma.formQuestion.findMany({
       where: {
         formType,
+        jobId,
         ...(options?.includeInactive ? {} : { isActive: true }),
       },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -166,10 +172,10 @@ export async function getFormQuestions(
 
     return records.map(mapRecordToDefinition);
   } catch (error) {
-    // Fallback to static config questions when DB/migrations are unavailable.
     console.error(`Falling back to config questions for ${formType}:`, error);
     return defaultQuestionsByFormType[formType].map((question) => ({
       id: `${formType}-${question.questionKey}`,
+      jobId: "",
       ...question,
     }));
   }

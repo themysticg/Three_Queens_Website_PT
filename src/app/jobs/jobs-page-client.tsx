@@ -34,7 +34,6 @@ type Props = {
   categories: string[];
   countByCategory: Record<string, number>;
   totalJobs: number;
-  configHasJobs?: boolean;
 };
 
 function JobApplicationModal({
@@ -178,7 +177,6 @@ export function JobsPageClient({
   categories,
   countByCategory,
   totalJobs,
-  configHasJobs = false,
 }: Props) {
   const { data: session } = useSession();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -193,17 +191,14 @@ export function JobsPageClient({
 
   const salaryDollars = (tier: number) => "$".repeat(Math.min(4, Math.max(1, tier)));
 
-  useEffect(() => {
+  function handleApplyClick(job: Job) {
+    setActiveJob(job);
     setQuestionsLoading(true);
-    fetch("/api/form-questions?formType=job")
+    fetch(`/api/form-questions?formType=job&jobId=${job.id}`)
       .then((res) => res.json())
       .then((data) => setQuestions(Array.isArray(data) ? data : []))
       .catch(() => setQuestions([]))
       .finally(() => setQuestionsLoading(false));
-  }, []);
-
-  function handleApplyClick(job: Job) {
-    setActiveJob(job);
   }
 
   function handleModalClose() {
@@ -334,10 +329,10 @@ export function JobsPageClient({
                   <button
                     type="button"
                     onClick={() => handleApplyClick(job)}
-                    disabled={questionsLoading}
+                    disabled={questionsLoading && activeJob?.id === job.id}
                     className="brand-bg rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {questionsLoading ? "Loading..." : "Start Application"}
+                    {questionsLoading && activeJob?.id === job.id ? "Loading..." : "Start Application"}
                   </button>
                 ) : (
                   <Link

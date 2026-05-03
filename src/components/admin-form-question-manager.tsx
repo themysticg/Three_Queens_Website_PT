@@ -57,17 +57,32 @@ function toEditorState(question: FormQuestionDefinition): EditorState {
   };
 }
 
+type JobOption = { id: string; title: string; category: string };
+
 export function AdminFormQuestionManager() {
   const toast = useToast();
   const [formType, setFormType] = useState<FormType>("whitelist");
+  const [jobId, setJobId] = useState<string>("");
+  const [jobs, setJobs] = useState<JobOption[]>([]);
   const [questions, setQuestions] = useState<FormQuestionDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editor, setEditor] = useState<EditorState>(EMPTY_EDITOR);
 
   useEffect(() => {
+    fetch("/api/admin/jobs")
+      .then((r) => r.json())
+      .then((data) => setJobs(Array.isArray(data) ? data : []))
+      .catch(() => { /* ignore — jobs tab may not be accessible */ });
+  }, []);
+
+  useEffect(() => {
+    if (formType === "job" && jobId === "" && jobs.length > 0) return;
+    if (formType === "job" && jobId === "") { setQuestions([]); setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/admin/form-questions?formType=${formType}`)
+    const params = new URLSearchParams({ formType });
+    if (formType === "job") params.set("jobId", jobId);
+    fetch(`/api/admin/form-questions?${params}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load questions");
         return res.json();
@@ -75,7 +90,7 @@ export function AdminFormQuestionManager() {
       .then((data) => setQuestions(Array.isArray(data) ? data : []))
       .catch(() => toast.addToast("Failed to load form questions", "error"))
       .finally(() => setLoading(false));
-  }, [formType, toast]);
+  }, [formType, jobId, jobs.length, toast]);
 
   const sortedQuestions = useMemo(
     () => [...questions].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -97,6 +112,7 @@ export function AdminFormQuestionManager() {
 
     const payload = {
       formType,
+      jobId: formType === "job" ? jobId : "",
       questionKey: editor.questionKey,
       label: editor.label,
       type: editor.type,
@@ -162,6 +178,7 @@ export function AdminFormQuestionManager() {
             type="button"
             onClick={() => {
               setFormType(type);
+              if (type !== "job") setJobId("");
               resetEditor();
             }}
             className={`rounded-lg px-4 py-3 text-sm font-medium transition ${
@@ -175,7 +192,31 @@ export function AdminFormQuestionManager() {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+      {formType === "job" && (
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
+          <label className="flex flex-col gap-2 text-sm font-medium text-zinc-300">
+            Select job to manage questions for
+            <select
+              value={jobId}
+              onChange={(e) => { setJobId(e.target.value); resetEditor(); }}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-base text-zinc-100 focus:border-[var(--accent)] focus:outline-none"
+            >
+              <option value="">— pick a job —</option>
+              {jobs.map((j) => (
+                <option key={j.id} value={j.id}>{j.title} ({j.category})</option>
+              ))}
+            </select>
+          </label>
+          {jobId === "" && (
+            <p className="mt-2 text-xs text-zinc-500">
+              Each job has its own question set. Select a job above to view or add questions for it.
+              Create jobs first from <strong>Jobs &amp; city positions → Manage jobs</strong>.
+            </p>
+          )}
+        </div>
+      )}
+
+      {formType === "job" && jobId === "" ? null : <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-zinc-100">
             {editor.id ? "Edit question" : "Add question"}
@@ -302,9 +343,9 @@ export function AdminFormQuestionManager() {
         >
           {saving ? "Saving..." : editor.id ? "Update question" : "Add question"}
         </button>
-      </form>
+      </form>}
 
-      {loading ? (
+      {formType === "job" && jobId === "" ? null : loading ? (
         <p className="text-zinc-500">Loading questions...</p>
       ) : (
         <div className="space-y-3">

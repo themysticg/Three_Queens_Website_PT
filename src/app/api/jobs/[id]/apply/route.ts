@@ -47,7 +47,7 @@ export async function POST(
     return response;
   }
 
-  const questions = await getFormQuestions("job");
+  const questions = await getFormQuestions("job", { jobId });
   let answersJson: string | null = null;
 
   if (questions.length > 0) {
